@@ -1,0 +1,21 @@
+{
+  "name": "FunPictures App",
+  "short_name": "FunPics",
+  "description": "Prenez des photos et remplacez votre tête par un Emoji !",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#121212",
+  "icons": [
+    {
+      "src": "logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
