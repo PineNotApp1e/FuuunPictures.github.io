@@ -3,30 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FunPictures - Tête en Emoji</title>
+    <title>FunPictures - Filtres & Emoji</title>
     
-    <!-- Lien vers le manifeste PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
-    
-    <!-- Lien vers le style -->
     <link rel="stylesheet" href="style.css">
     
-    <!-- Scripts MediaPipe pour la détection de visage -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+    <!-- Scripts MediaPipe avec version fixe pour éviter les bugs -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4/face_detection.js"></script>
 </head>
 <body>
     <div class="app-container">
-        <!-- Vidéo source cachée -->
         <video id="videoElement" autoplay playsinline style="display: none;"></video>
-        
-        <!-- Canvas où tout est dessiné -->
         <canvas id="outputCanvas"></canvas>
         
         <div class="controls">
-            <button id="toggleEmojiBtn" class="btn filter-btn">Activer Emoji 😎</button>
+            <button id="toggleEmojiBtn" class="btn filter-btn">😎 Emoji</button>
             <button id="captureBtn" class="btn capture-btn">📸</button>
+            <button id="togglePixelBtn" class="btn filter-btn">👾 Pixel</button>
         </div>
 
         <div class="gallery" id="gallery">
@@ -35,7 +29,6 @@
         </div>
     </div>
 
-    <!-- Script principal -->
     <script src="app.js"></script>
 </body>
 </html>
