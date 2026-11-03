@@ -27,18 +27,19 @@ body, html {
     object-fit: cover;
 }
 
+/* --- BARRE DE CONTRÔLES CORRIGÉE --- */
 .controls {
     position: absolute;
     bottom: 20px;
     left: 0;
     width: 100%;
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
+    flex-wrap: wrap; /* Permet aux boutons de passer à la ligne */
+    gap: 10px; /* Espace entre les boutons */
     padding: 0 10px;
     z-index: 10;
-    flex-wrap: wrap; /* Permet aux boutons de s'adapter */
-    gap: 10px;
 }
 
 .btn {
@@ -46,39 +47,45 @@ body, html {
     border-radius: 50px;
     cursor: pointer;
     font-weight: bold;
-    transition: transform 0.2s, opacity 0.2s;
+    transition: transform 0.2s, background-color 0.2s;
 }
 
 .btn:active {
     transform: scale(0.95);
 }
 
+/* Boutons d'effets */
 .filter-btn {
-    padding: 12px 20px;
+    padding: 10px 15px;
     background-color: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     color: white;
-    font-size: 16px;
+    font-size: 14px;
     border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .filter-btn.active {
     background-color: #ff9800;
     border-color: #ff9800;
+    color: black;
 }
 
+/* Bouton photo central */
 .capture-btn {
-    width: 70px;
-    height: 70px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
     background-color: white;
-    font-size: 30px;
+    font-size: 28px;
     display: flex;
     justify-content: center;
     align-items: center;
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    margin: 0 10px;
 }
 
+/* --- GALERIE --- */
 .gallery {
     position: absolute;
     top: 20px;
@@ -88,17 +95,4 @@ body, html {
 }
 
 .gallery h3 {
-    font-size: 14px;
-    margin-bottom: 10px;
-    text-shadow: 1px 1px 3px black;
-}
-
-#gallery-items img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 10px;
-    border: 2px solid white;
-    margin-bottom: 5px;
-    cursor: pointer;
-}
+    font-size
