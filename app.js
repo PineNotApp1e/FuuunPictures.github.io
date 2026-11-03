@@ -1,31 +1,46 @@
 const videoElement = document.getElementById('videoElement');
 const canvasElement = document.getElementById('outputCanvas');
 const canvasCtx = canvasElement.getContext('2d');
-const toggleEmojiBtn = document.getElementById('toggleEmojiBtn');
-const togglePixelBtn = document.getElementById('togglePixelBtn');
 const captureBtn = document.getElementById('captureBtn');
 const galleryItems = document.getElementById('gallery-items');
 
-let isEmojiActive = false;
-let isPixelActive = false;
-let detectedFaces = [];
-let isDetecting = false; // Verrou pour ne pas surcharger l'IA
+// Boutons des effets
+const btnPixel = document.getElementById('btnPixel');
+const btnSepia = document.getElementById('btnSepia');
+const btnBw = document.getElementById('btnBw');
+const btnInvert = document.getElementById('btnInvert');
+
+// État actuel de l'effet ('none', 'pixel', 'sepia', 'bw', 'invert')
+let currentEffect = 'none';
 
 // Enregistrement du Service Worker
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(err => console.error('Erreur SW:', err));
 }
 
-// Boutons des filtres
-toggleEmojiBtn.addEventListener('click', () => {
-    isEmojiActive = !isEmojiActive;
-    toggleEmojiBtn.classList.toggle('active', isEmojiActive);
-});
+// Fonction pour gérer l'activation d'un effet
+function setEffect(effectName, btnElement) {
+    // Si on clique sur l'effet déjà actif, on le désactive
+    if (currentEffect === effectName) {
+        currentEffect = 'none';
+    } else {
+        currentEffect = effectName;
+    }
+    
+    // Retirer la classe 'active' de tous les boutons
+    [btnPixel, btnSepia, btnBw, btnInvert].forEach(btn => btn.classList.remove('active'));
+    
+    // Ajouter la classe 'active' au bouton cliqué si un effet est actif
+    if (currentEffect !== 'none') {
+        btnElement.classList.add('active');
+    }
+}
 
-togglePixelBtn.addEventListener('click', () => {
-    isPixelActive = !isPixelActive;
-    togglePixelBtn.classList.toggle('active', isPixelActive);
-});
+// Écouteurs d'événements pour les boutons
+btnPixel.addEventListener('click', () => setEffect('pixel', btnPixel));
+btnSepia.addEventListener('click', () => setEffect('sepia', btnSepia));
+btnBw.addEventListener('click', () => setEffect('bw', btnBw));
+btnInvert.addEventListener('click', () => setEffect('invert', btnInvert));
 
 // Ajuster la taille du canvas
 function resizeCanvas() {
@@ -48,83 +63,50 @@ async function initCamera() {
     }
 }
 
-// Initialisation de l'IA MediaPipe
-const faceDetection = new FaceDetection({locateFile: (file) => {
-    return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4/${file}`;
-}});
-
-faceDetection.setOptions({
-    model: 'short',
-    minDetectionConfidence: 0.5
-});
-
-faceDetection.onResults((results) => {
-    detectedFaces = results.detections;
-});
-
-// Boucle principale
-async function renderLoop() {
+// Boucle principale d'affichage
+function renderLoop() {
     if (videoElement.readyState === 4) {
-        
-        // 1. Envoyer à l'IA uniquement si on ne traite pas déjà une image
-        if (isEmojiActive && !isDetecting) {
-            isDetecting = true;
-            faceDetection.send({image: videoElement}).then(() => {
-                isDetecting = false;
-            }).catch(() => {
-                isDetecting = false;
-            });
-        }
-
-        // 2. Dessiner la vidéo de base
         canvasCtx.save();
-        canvasCtx.scale(-1, 1); // Effet miroir
+        
+        // Effet miroir pour la caméra frontale
+        canvasCtx.scale(-1, 1);
         canvasCtx.translate(-canvasElement.width, 0);
         
+        // Calculs pour remplir l'écran sans déformer l'image
         const vRatio = canvasElement.width / videoElement.videoWidth;
         const hRatio = canvasElement.height / videoElement.videoHeight;
         const ratio  = Math.max(vRatio, hRatio);
         const centerShift_x = (canvasElement.width - videoElement.videoWidth * ratio) / 2;
         const centerShift_y = (canvasElement.height - videoElement.videoHeight * ratio) / 2;  
         
+        // Appliquer les filtres CSS natifs du Canvas
+        if (currentEffect === 'sepia') canvasCtx.filter = 'sepia(100%)';
+        else if (currentEffect === 'bw') canvasCtx.filter = 'grayscale(100%)';
+        else if (currentEffect === 'invert') canvasCtx.filter = 'invert(100%)';
+        else canvasCtx.filter = 'none'; // Pas de filtre CSS
+
+        // Dessiner la vidéo
         canvasCtx.drawImage(videoElement, 0, 0, videoElement.videoWidth, videoElement.videoHeight,
                             centerShift_x, centerShift_y, videoElement.videoWidth * ratio, videoElement.videoHeight * ratio);
-        canvasCtx.restore();
+        
+        // Réinitialiser le filtre pour ne pas impacter d'autres éléments
+        canvasCtx.filter = 'none';
 
-        // 3. Appliquer l'effet Pixelisation (réduction puis agrandissement brut)
-        if (isPixelActive) {
-            const pixelScale = 0.03; // Taille des pixels (plus le chiffre est petit, plus les pixels sont gros)
+        // Appliquer l'effet Pixelisation (qui demande une manipulation différente)
+        if (currentEffect === 'pixel') {
+            const pixelScale = 0.03; 
             const w = canvasElement.width * pixelScale;
             const h = canvasElement.height * pixelScale;
             
-            canvasCtx.imageSmoothingEnabled = false; // Désactiver le lissage
-            // On dessine le canvas sur lui-même en tout petit
+            canvasCtx.imageSmoothingEnabled = false; // Rendu brut
+            // Dessiner l'image en tout petit
             canvasCtx.drawImage(canvasElement, 0, 0, canvasElement.width, canvasElement.height, 0, 0, w, h);
-            // On le ré-étire sur toute la taille
+            // La ré-agrandir
             canvasCtx.drawImage(canvasElement, 0, 0, w, h, 0, 0, canvasElement.width, canvasElement.height);
-            canvasCtx.imageSmoothingEnabled = true; // Réactiver pour le reste
+            canvasCtx.imageSmoothingEnabled = true; // Remettre par défaut
         }
 
-        // 4. Dessiner l'emoji (par dessus la vidéo et les pixels)
-        if (isEmojiActive && detectedFaces.length > 0) {
-            canvasCtx.save();
-            canvasCtx.scale(-1, 1);
-            canvasCtx.translate(-canvasElement.width, 0);
-            
-            detectedFaces.forEach(detection => {
-                const box = detection.boundingBox;
-                const x = (box.xMin * videoElement.videoWidth * ratio) + centerShift_x;
-                const y = (box.yMin * videoElement.videoHeight * ratio) + centerShift_y;
-                const width = box.width * videoElement.videoWidth * ratio;
-                const height = box.height * videoElement.videoHeight * ratio;
-
-                canvasCtx.font = `${Math.max(width, height) * 1.5}px Arial`;
-                canvasCtx.textAlign = 'center';
-                canvasCtx.textBaseline = 'middle';
-                canvasCtx.fillText("😎", videoElement.videoWidth * ratio - x - width/2, y + height/2);
-            });
-            canvasCtx.restore();
-        }
+        canvasCtx.restore();
     }
     requestAnimationFrame(renderLoop);
 }
