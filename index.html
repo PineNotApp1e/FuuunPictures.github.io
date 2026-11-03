@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FunPictures - Filtres & Emoji</title>
+    <title>FunPictures - Effets Caméra</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
     <link rel="stylesheet" href="style.css">
-    
-    <!-- Scripts MediaPipe avec version fixe pour éviter les bugs -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4/face_detection.js"></script>
 </head>
 <body>
     <div class="app-container">
         <video id="videoElement" autoplay playsinline style="display: none;"></video>
         <canvas id="outputCanvas"></canvas>
         
+        <!-- Barre de contrôles avec les nouveaux effets -->
         <div class="controls">
-            <button id="toggleEmojiBtn" class="btn filter-btn">😎 Emoji</button>
+            <button id="btnPixel" class="btn filter-btn">👾 Pixel</button>
+            <button id="btnSepia" class="btn filter-btn">🍂 Sépia</button>
+            
             <button id="captureBtn" class="btn capture-btn">📸</button>
-            <button id="togglePixelBtn" class="btn filter-btn">👾 Pixel</button>
+            
+            <button id="btnBw" class="btn filter-btn">🖤 N&B</button>
+            <button id="btnInvert" class="btn filter-btn">👽 Négatif</button>
         </div>
 
         <div class="gallery" id="gallery">
